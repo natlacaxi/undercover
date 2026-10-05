@@ -495,7 +495,7 @@ const PRESETS=[
  {id:'carbone',n:'Carbone',a:'#c8c8dc',b:'#7a7a96'}
 ];
 const DEF={
- np:5,music:true,mvol:50,mstyle:'chill',mtrack:1,und:1,white:false,whiteStarts:false,timer:0,debate:0,hints:true,reveal:'full',hold:false,autoHide:0,
+ np:5,music:true,mvol:50,mstyle:'chill',mtrack:3,und:1,white:false,whiteStarts:false,timer:0,debate:0,hints:true,reveal:'full',hold:false,autoHide:0,
  scoring:true,pts:{civ:2,und:10,white:6,guess:12},
  rn:{c:'Civil',u:'Undercover',w:'Mr White'},
  rc:{c:'#2ee59d',u:'#ff4f8b',w:'#e9e9f5'},
@@ -527,6 +527,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');cl
 /* ================= ÉTAT ================= */
 let S=deepMerge(DEF,store.get('S',{}));
 if(S.v27!==2){S.v27=2;S.radius=40}
+if(S.v28!==1){S.v28=1;S.mtrack=3}
 let P=store.get('P',null);
 let C=store.get('C',[]);
 let scores=store.get('scores',{});
