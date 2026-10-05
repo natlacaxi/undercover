@@ -279,6 +279,23 @@ input[type=text]{padding:13px 22px}
 .btn:active,.vote:active,.iconbtn:active,.chip:active,.tab:active,.seg button:active,.stepper button:active,.sumcard:active,.egrid button:active,.swatch:active,.pc:not(.taken):active{transform:scale(.93);filter:brightness(1.15)}
 .rip{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.6),rgba(255,255,255,.2) 55%,transparent 70%);transform:scale(0);opacity:1;animation:rip .65s ease-out forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(1);opacity:0}}
+
+/* ---------- Cartes plus belles + ondulation ---------- */
+.pc{background:radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.4),transparent 55%),radial-gradient(90% 60% at 90% 100%,rgba(255,255,255,.18),transparent 60%),linear-gradient(160deg,var(--acc),var(--acc2));border:1.5px solid rgba(255,255,255,.55);box-shadow:0 14px 30px rgba(var(--acc-rgb),.38),inset 0 1px 0 rgba(255,255,255,.65);animation:wave 3.6s ease-in-out infinite;animation-delay:calc(var(--k,0)*-.42s);color:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}
+.pc::before{content:"";position:absolute;inset:7px;border-radius:calc(32px - 8px);border:1.5px solid rgba(255,255,255,.4);pointer-events:none}
+.pc::after{content:"";position:absolute;top:-30%;left:-60%;width:40%;height:160%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:rotate(20deg);animation:sheen 4.5s ease-in-out infinite;animation-delay:calc(var(--k,0)*-.6s);pointer-events:none}
+.pc span{font-size:2.3rem;text-shadow:0 3px 12px rgba(0,0,0,.35);opacity:.95}
+.pc i{color:#fff;opacity:.85;z-index:1}
+.pc:not(.taken):active{scale:.92}
+.pc.taken{background:var(--glass);box-shadow:none;border:1px solid var(--edge);animation:none;color:var(--txt)}
+.pc.taken::before,.pc.taken::after{display:none}
+.pc.big{animation:pop .5s cubic-bezier(.2,1.6,.4,1) both,wave 3.6s ease-in-out .5s infinite}
+@keyframes wave{0%,100%{transform:translateY(0) rotate(var(--rot,0deg))}50%{transform:translateY(-7px) rotate(calc(var(--rot,0deg) + 2.6deg))}}
+@keyframes sheen{0%,55%{left:-60%}100%{left:130%}}
+.face.front{background:radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.4),transparent 55%),linear-gradient(160deg,var(--acc),var(--acc2));color:#fff;border:1.5px solid rgba(255,255,255,.55);box-shadow:0 16px 36px rgba(var(--acc-rgb),.4),inset 0 1px 0 rgba(255,255,255,.65);text-shadow:0 2px 10px rgba(0,0,0,.3)}
+.face.back{border:1.5px solid rgba(255,255,255,.4);box-shadow:0 16px 36px rgba(var(--acc-rgb),.3)}
+.secret:not(.open){animation:wave2 3.8s ease-in-out infinite}
+@keyframes wave2{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1.4deg)}}
 </style>
 </head>
 <body>
@@ -495,7 +512,7 @@ const PRESETS=[
  {id:'carbone',n:'Carbone',a:'#c8c8dc',b:'#7a7a96'}
 ];
 const DEF={
- np:5,music:true,mvol:50,mstyle:'chill',mtrack:3,und:1,white:false,whiteStarts:false,timer:0,debate:0,hints:true,reveal:'full',hold:false,autoHide:0,
+ np:5,music:true,mvol:50,mstyle:'chill',mtrack:4,und:1,white:false,whiteStarts:false,timer:0,debate:0,hints:true,reveal:'full',hold:false,autoHide:0,
  scoring:true,pts:{civ:2,und:10,white:6,guess:12},
  rn:{c:'Civil',u:'Undercover',w:'Mr White'},
  rc:{c:'#2ee59d',u:'#ff4f8b',w:'#e9e9f5'},
@@ -527,7 +544,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');cl
 /* ================= ÉTAT ================= */
 let S=deepMerge(DEF,store.get('S',{}));
 if(S.v27!==2){S.v27=2;S.radius=40}
-if(S.v28!==1){S.v28=1;S.mtrack=3}
+if(S.v28!==2){S.v28=2;S.mtrack=4}
 let P=store.get('P',null);
 let C=store.get('C',[]);
 let scores=store.get('scores',{});
@@ -592,6 +609,12 @@ const sfx={
   boom:()=>{noise(.5,300,.6,.25,0,60);beep(120,.4,'sawtooth',.2);beep(70,.5,'square',.15,.05)},
   win:()=>[523,659,784,1047].forEach((f,i)=>beep(f,.25,'triangle',.15,i*.12)),
   lose:()=>[400,330,260,200].forEach((f,i)=>beep(f,.25,'sawtooth',.1,i*.14)),
+  elim:r=>{sfx.boom();setTimeout(()=>r==='c'?sfx.sad():sfx.good(),450)},
+  sad:()=>[392,370,349,311].forEach((f,i)=>{beep(f,.34,'sawtooth',.09,i*.28);beep(f*1.01,.34,'sawtooth',.06,i*.28)}),
+  good:()=>{[784,988,1175,1568].forEach((f,i)=>beep(f,.22,'triangle',.12,i*.08));noise(.4,5000,1,.06,.1,9000)},
+  end:w=>w==='infiltres'?sfx.evil():sfx.fan(),
+  fan:()=>{[523,659,784,1047,1319,1568].forEach((f,i)=>{beep(f,.4,'triangle',.13,i*.1);beep(f/2,.5,'sine',.08,i*.1)});[523,659,784,1047].forEach(f=>beep(f,1.2,'triangle',.1,.7));noise(.8,6000,1,.08,.5,10000)},
+  evil:()=>{[196,185,175,147].forEach((f,i)=>{beep(f,.5,'sawtooth',.12,i*.3);beep(f*1.5,.5,'square',.05,i*.3)});noise(.6,200,.6,.15,1.2,60)},
   tick:()=>beep(900,.05,'square',.06),
   alarm:()=>[880,0,880,0,880].forEach((f,i)=>f&&beep(f,.15,'square',.12,i*.17))
 };
@@ -604,7 +627,7 @@ const TRACKS=[{u:''},
  {u:'https://res.cloudinary.com/jjmksoqr/video/upload/v1791151107/YTDown.com_YouTube_Media_iduFE0kWDhY_Musique-Calme-et-Relaxante-10-Minutes-de-Temps-Calme_007_128k.mp3'},
  {u:'https://res.cloudinary.com/jjmksoqr/video/upload/v1791151280/YTDown.com_YouTube_Media_JFURi9ZqCgQ_30-Minutes-de-Temps-Calme-pour-les-3-6-Ans-Musique-Douce-et-Relaxante-Calme-l-Hy_009_128k.mp3'},
  {u:'https://res.cloudinary.com/jjmksoqr/video/upload/v1791151548/YTDown.com_YouTube_Media_60mRj_9Rybc_Verdi-Dies-Irae-Requiem-Gustavo-Dudamel_008_128k.mp3'}];
-let AU=null,auBad=false;
+let AU=null,auBad=false,chain=true,ovr=null;
 const MST={chill:{r:196,sc:[0,3,7,10,12,15,19],ch:[0,3,7,10,14],pr:[0,-4,-2,-7],bpm:66},
  mystere:{r:164.8,sc:[0,1,5,7,8,12,13],ch:[0,1,7,12],pr:[0,-2,-5,-4],bpm:58},
  zen:{r:261.6,sc:[0,2,4,7,9,12,14],ch:[0,4,7,11,14],pr:[0,5,-3,-5],bpm:54}};
@@ -637,12 +660,12 @@ function genStart(){
 function genStop(){clearInterval(MU.id);MU.id=0;const g=MU.g;MU.g=null;if(g&&actx){g.gain.setTargetAtTime(0,actx.currentTime,.25);setTimeout(()=>{try{g.disconnect()}catch(e){}},1500)}}
 function musicStart(){
   if(!S.music)return;
-  const t=TRACKS[S.mtrack];
+  const ti=ovr!==null?ovr:S.mtrack,t=TRACKS[ti];
   if(t&&t.u&&navigator.onLine&&!auBad){
     genStop();
-    try{if(!AU){AU=new Audio();AU.loop=true;AU.preload='auto';AU.onerror=()=>{auBad=true;AU.pause();musicStart()}}
+    try{if(!AU){AU=new Audio();AU.preload='auto';AU.onended=()=>{if(chain&&ovr===null&&S.mtrack===4){ovr=3;musicStart()}};AU.onerror=()=>{auBad=true;AU.pause();musicStart()}}
       if(AU.dataset.u!==t.u){AU.dataset.u=t.u;AU.src=t.u}
-      AU.volume=S.mvol/100;
+      AU.volume=S.mvol/100;AU.loop=!(chain&&ovr===null&&ti===4);
       if(AU.paused){const pr=AU.play();if(pr&&pr.catch)pr.catch(()=>{})}}catch(e){auBad=true}
   }else{if(AU)AU.pause();genStart()}
 }
@@ -728,7 +751,7 @@ function applyScores(w){
   });saveAll();
 }
 function finish(w){
-  G.winner=w;applyScores(w);go('end');sfx.win();vib([80,60,80,60,200]);
+  G.winner=w;applyScores(w);go('end');sfx.end(w);vib([80,60,80,60,200]);
   confetti(200,w==='civils'?[S.rc.c,S.acc,'#fff','#ffb13b']:[S.rc.u,S.acc2,'#fff','#ffb13b']);
 }
 function enterPlay(){G.order=startOrder();G.spk=0;go('play');if(S.timer>0)startTimer(S.timer)}
@@ -806,7 +829,7 @@ reveal(){
     <div><div class="mut">Passe le téléphone au joueur ${no}</div><div class="big" style="font-size:1.9rem">Choisis une carte 🃏</div></div>
     <div class="deck ${n>9?'c4':''}">${G.slots.map((_,k)=>{const t=G.players.find(p=>p.card===k);
       return t?`<div class="pc taken">${av(t.e,t.name,'lg')}<small>${esc(t.name)}</small></div>`
-      :`<button class="pc" data-act="pickcard" data-i="${k}" style="--rot:${((k*37)%9-4)}deg"><span>?</span><i>${k+1}</i></button>`}).join('')}</div>
+      :`<button class="pc" data-act="pickcard" data-i="${k}" style="--rot:${((k*37)%9-4)}deg;--k:${k}"><span>?</span><i>${k+1}</i></button>`}).join('')}</div>
     <div class="hint">Une fois ta carte prise, ne la montre à personne 🤫</div>
   </div>`;
   if(ui.rstep==='name'){
@@ -1106,7 +1129,7 @@ function closeSettings(){$('#settings').classList.remove('open');document.body.s
 function setVal(k,v){sp(S,k,v);if(k==='acc'||k==='acc2')S.theme='custom';
   if(k==='music')v?musicStart():musicStop();
   else if(k==='mvol'){if(AU)AU.volume=v/100;if(MU.g)MU.g.gain.setTargetAtTime(mvol(),actx.currentTime,.1)}
-  else if(k==='mtrack'||k==='mstyle'){auBad=false;musicStop();setTimeout(musicStart,350)}
+  else if(k==='mtrack'||k==='mstyle'){if(k==='mtrack'){chain=false;ovr=null}auBad=false;musicStop();setTimeout(musicStart,350)}
   saveAll();applyTheme()}
 
 /* ================= MODALES ================= */
@@ -1210,7 +1233,7 @@ document.addEventListener('click',e=>{
     case 'pick':ui.sel=i;sfx.vote();vib(20);render();break;
     case 'eliminate':{
       const o=ui.sel;G.out=o;G.players[o].alive=false;G.hist.push({r:G.round,i:o});
-      go('elim');sfx.boom();vib([100,50,200]);break}
+      go('elim');sfx.elim(G.players[o].role);vib([100,50,200]);break}
     case 'afterelim':{
       const p=G.players[G.out];
       if(p.role==='w'&&!ui.guessing){ui.guessing=true;render();break}
