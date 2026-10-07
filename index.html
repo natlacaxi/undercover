@@ -298,6 +298,7 @@ input[type=text]{padding:13px 22px}
 .face.back{border:1.5px solid rgba(255,255,255,.4);box-shadow:0 16px 36px rgba(var(--acc-rgb),.3)}
 .secret:not(.open){animation:wave2 3.8s ease-in-out infinite}
 @keyframes wave2{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1.4deg)}}
+.oc.tap{cursor:pointer}.oc.tap:active{scale:.94}
 </style>
 </head>
 <body>
@@ -514,7 +515,7 @@ const PRESETS=[
  {id:'carbone',n:'Carbone',a:'#c8c8dc',b:'#7a7a96'}
 ];
 const DEF={
- np:5,music:true,mvol:50,mstyle:'chill',mtrack:4,und:1,white:false,whiteStarts:false,timer:0,debate:0,hints:true,reveal:'full',hold:false,autoHide:0,
+ np:5,forgot:true,music:true,mvol:50,mstyle:'chill',mtrack:4,und:1,white:false,whiteStarts:false,timer:0,debate:0,hints:true,reveal:'full',hold:false,autoHide:0,
  scoring:true,pts:{civ:2,und:10,white:6,guess:12},
  rn:{c:'Civil',u:'Undercover',w:'Mr White'},
  rc:{c:'#2ee59d',u:'#ff4f8b',w:'#e9e9f5'},
@@ -894,7 +895,7 @@ play(){
       ${hasRing?`<div class="ring" id="ring" data-act="tpause"><b id="tm">${fmtT(ringTxt)}</b></div>`:''}
     </div>`}
   <div class="chips">
-    ${a.map((p,k)=>`<span class="oc ${k===G.spk?'now':k<G.spk?'done':''}">${av(p.e,p.name,'sm')}${esc(p.name)}</span>`).join('')}
+    ${a.map((p,k)=>`<span class="oc ${S.forgot?'tap':''} ${k===G.spk?'now':k<G.spk?'done':''}" ${S.forgot?`data-act="forgot" data-i="${p.i}"`:''}>${av(p.e,p.name,'sm')}${esc(p.name)}</span>`).join('')}
     ${dead.map(p=>`<span class="oc dead">${av(p.e,p.name,'sm')}${esc(p.name)}</span>`).join('')}
   </div>
   ${S.hints?`<div class="hint">💡 ${hintText()}</div>`:''}
@@ -1014,6 +1015,7 @@ game(){
     ${R('Chrono de débat','Avant le vote','',1).replace('<div class="sc"></div>',`<div class="sc">${SG('debate',[[0,'Off'],[60,'1 min'],[120,'2 min'],[180,'3 min'],[300,'5 min']])}</div>`)}
     ${R('Mr White peut commencer','Sinon il ne parle jamais en premier',T('whiteStarts'))}
     ${R('Conseils en jeu','Rappels de stratégie',T('hints'))}
+    ${R('Mot oublié ?','Toucher son nom pour revoir son mot',T('forgot'))}
     ${R('Rôle révélé à l\'élimination','Complet = rôle exact · Camp = civil ou infiltré (mot visible à la fin)','',1).replace('<div class="sc"></div>',`<div class="sc">${SG('reveal',[['full','Complet'],['camp','Camp seulement']])}</div>`)}
   </div>
   <div class="ssec"><h4>Distribution des mots</h4>
@@ -1225,6 +1227,16 @@ document.addEventListener('click',e=>{
       G.spk++;clearTimer();ui.tt=0;ui.tl=0;render();
       if(G.spk<G.order.length&&S.timer>0)startTimer(S.timer);
       break;
+    case 'forgot':{const q=G.players[i];if(!q||!q.alive)break;sfx.open();
+      modal(`<div class="center" style="display:flex;flex-direction:column;align-items:center;gap:12px">${av(q.e,q.name,'xl')}<h3 style="margin:0">${esc(q.name)}, tu as oublié ton mot ?</h3>
+      <p>Seul <b>${esc(q.name)}</b> doit regarder l'écran. Valide pour revoir ton mot.</p>
+      <button class="btn good" style="width:100%" data-act="forgotok" data-i="${i}">✅ Oui, c'est moi</button>
+      <button class="btn ghost" style="width:100%" data-act="closem">Annuler</button></div>`);break}
+    case 'forgotok':{const q=G.players[i],w=wordFor(q);sfx.flip();
+      modal(`<div class="center" style="display:flex;flex-direction:column;align-items:center;gap:12px"><div class="mut small" style="text-transform:uppercase;letter-spacing:2px">${w?'Ton mot secret':'Ton rôle'}</div>
+      <div class="big" style="font-size:2.4rem;font-weight:900;word-break:break-word">${w?esc(w):'⚪ '+esc(rn('w'))}</div>
+      ${w?'':'<p>Tu n\'as pas de mot. Bluffe et écoute !</p>'}
+      <button class="btn" style="width:100%" data-act="closem">🙈 Cacher</button></div>`);break}
     case 'tpause':
       if(!ui.tt){const s=G.spk<G.order.length?S.timer:S.debate;if(s>0)startTimer(s)}
       else if(ui.tid)clearTimer();
